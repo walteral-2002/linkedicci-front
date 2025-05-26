@@ -1,0 +1,93 @@
+import { CSSProperties } from 'react';
+import { formatDiagnosticsWithColorAndContext } from 'typescript';
+
+// Register.Styles.ts
+const RegisterStyles = {
+    button: {
+        padding: '10px 20px',
+        backgroundColor: '#ffffff',
+        color: '#1e4d04',
+        border: 'none',
+        borderRadius: '20px',
+        fontSize: '14px',
+        fontWeight: 'bold',
+        cursor: 'pointer',
+        display: 'flex',
+        gap: '10px',
+    },
+    buttonContainer: {
+        display: 'flex',
+        gap: '10px',
+        justifyContent: 'center',
+    },
+    centeredContent: {
+        display: 'flex',
+        flexDirection: 'column' as 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flex: 1,
+    },
+    container: {
+        display: 'flex',
+        flexDirection: 'column' as 'column',
+        height: '100vh',
+        backgroundColor: '#1e4d04',
+        position: 'relative' as 'relative',
+    },
+    createAccount: {
+        padding: '10px 20px',
+        backgroundColor: '#1e4d04',
+        color: 'white',
+        border: 'none',
+        borderRadius: '20px',
+        fontSize: '14px',
+        fontWeight: 'bold',
+        cursor: 'pointer',
+    },
+    formGroup: {
+        marginBottom: '15px',
+        width: '100%',
+        maxWidth: '300px',
+    },
+    input: {
+        width: '300px',
+        padding: '10px',
+        margin: '10px 0',
+        border: 'none',
+        borderRadius: '5px',
+        fontSize: '14px',
+        backgroundColor: '#e7ffe5',
+        color: '#666',
+    },
+    label: {
+        display: 'block',
+        fontSize: '14px',
+        color: '#ffffff',
+        fontWeight: 'bold',
+    },
+    loginButton: {
+        padding: '10px 20px',
+        backgroundColor: '#1e4d04',
+        color: 'white',
+        border: 'none',
+        borderRadius: '20px',
+        fontSize: '14px',
+        fontWeight: 'bold',
+        cursor: 'pointer',
+    },
+    logoImage: {
+        width: '150px',
+        position: 'absolute' as 'absolute',
+        top: '20px',
+        left: '20px',
+    },
+    title: {
+        color: '#fff',
+        fontSize: '36px',
+        fontWeight: 'normal',
+        marginBottom: '20px',
+        margin: '0 0 70px 0',
+    },
+};
+
+export default RegisterStyles;
