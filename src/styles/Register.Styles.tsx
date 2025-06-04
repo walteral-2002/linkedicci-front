@@ -1,7 +1,3 @@
-import { CSSProperties } from 'react';
-import { formatDiagnosticsWithColorAndContext } from 'typescript';
-
-// Register.Styles.ts
 const RegisterStyles = {
     button: {
         padding: '10px 20px',
@@ -43,6 +39,13 @@ const RegisterStyles = {
         fontSize: '14px',
         fontWeight: 'bold',
         cursor: 'pointer',
+    },
+    errorText: {
+        marginTop: '15px',
+        color: '#ff6b6b',
+        fontWeight: 500,
+        fontSize: '14px',
+        maxWidth: '400px',
     },
     formGroup: {
         marginBottom: '15px',
