@@ -14,3 +14,24 @@ export const GET_USER_INFO = gql`
     }
   } 
 `;
+
+export const GET_APPLICATIONS = gql`
+  query Offers{ 
+    offers { 
+      success 
+      message 
+      data { 
+        id 
+        title 
+        description 
+        company 
+        location 
+        salary 
+        createdByHeadOfCareerId 
+        isInternship 
+        createdAt 
+        updatedAt 
+      } 
+    } 
+  }
+`;

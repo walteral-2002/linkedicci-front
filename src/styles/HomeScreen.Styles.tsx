@@ -1,6 +1,18 @@
 import { CSSProperties } from 'react';
 
 const HomeStyles: { [key: string]: CSSProperties } = {
+  applicantsButton: {
+    backgroundColor: '#1e4d04',
+    border: '1px solid #1e4d04',
+    color: '#ffffff',
+    padding: '5px 10px',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+  },
   applyButton: {
     backgroundColor: '#ffffff',
     border: '1px solid #1e4d04',
@@ -12,6 +24,20 @@ const HomeStyles: { [key: string]: CSSProperties } = {
     display: 'flex',
     alignItems: 'center',
     gap: '10px',
+  },
+  boxTitle: {
+    fontSize: '20px',
+    fontWeight: 'bold',
+    margin: '10px 0 5px 0', 
+    marginBottom: '15px',
+    color: '#1e4d04',
+    textAlign: 'center',
+  },
+  boxIsInternship: { 
+    fontFamily: 'sans-serif', 
+    fontSize: '14px', 
+    fontWeight: 'bold', 
+    color: '#1e4d04' 
   },
   companyLogo: {
     width: '50px',
@@ -27,6 +53,39 @@ const HomeStyles: { [key: string]: CSSProperties } = {
     padding: 0,
     overflow: 'hidden',
   },
+  createJobContainer: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100vw',
+    height: '100vh',
+    background: 'rgba(0,0,0,0.3)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+  },
+  createJobButton: {
+    border: '1px solid #1e4d04',
+    padding: '5px 10px',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    marginBottom: '10px', 
+    backgroundColor: '#1e4d04', 
+    color: 'white',
+  },
+  createJobPopup: {
+    background: 'white',
+    padding: '30px',
+    borderRadius: '10px',
+    boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+    minWidth: '350px',
+    maxWidth: '90vw',
+  },
   jobCard: {
     backgroundColor: 'white',
     padding: '20px',
@@ -37,8 +96,20 @@ const HomeStyles: { [key: string]: CSSProperties } = {
   },
   jobDescription: {
     fontSize: '14px',
+    fontWeight: 'bold',
     color: '#8b8b8b',
     margin: '10px 0',
+  },
+  jobType: {
+    backgroundColor: '#ffffff',
+    border: '1px solid #1e4d04',
+    color: '#1e4d04',
+    padding: '5px 10px',
+    borderRadius: '4px',
+    fontSize: '14px',
+    alignItems: 'center',
+    gap: '10px',
+    fontWeight: 'bold',
   },
   jobHeader: {
     display: 'flex',
@@ -84,7 +155,11 @@ const HomeStyles: { [key: string]: CSSProperties } = {
     fontSize: '16px',
     fontWeight: 'bold',
     cursor: 'pointer',
-    marginTop: '150px',
+    position: 'absolute',
+    bottom: '50px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    marginTop: 0,
   },
   mainContent: {
     marginLeft: '250px',

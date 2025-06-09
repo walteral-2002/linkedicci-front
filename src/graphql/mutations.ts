@@ -23,3 +23,24 @@ export const LOGIN_USER = gql`
     }  
   }
 `;
+
+export const CREATE_APPLICATION = gql`
+mutation CreateOffer($input: CreateOfferDto!) {
+  createOffer(input: $input) {
+      success
+      message
+      data {
+        id
+        title
+        description
+        company
+        location
+        salary
+        createdByHeadOfCareerId
+        isInternship
+        createdAt
+        updatedAt
+      }
+    }
+}
+`;

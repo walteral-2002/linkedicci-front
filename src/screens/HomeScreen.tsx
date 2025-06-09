@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useApolloClient, useQuery, useMutation } from '@apollo/client';
 import HomeStyles from '../styles/HomeScreen.Styles';
-import { GET_USER_INFO } from '../graphql/queries';
-import { useApolloClient, useQuery } from '@apollo/client';
+import { GET_USER_INFO, GET_APPLICATIONS } from '../graphql/queries';
+import { CREATE_APPLICATION } from '../graphql/mutations';
 
 interface User {
   id: string;
@@ -19,51 +20,87 @@ interface UserQueryResponse {
   };
 }
 
-// Mock data for job listings (replace with actual query data)
 interface Job {
-  id: number;
+  id: string;
   title: string;
   company: string;
   location: string;
   description: string;
-  requirements: string[];
+  salary: string;
+  createdByHeadOfCareerId: string;
+  isInternship: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
-const mockJobs: Job[] = [
-  {
-    id: 1,
-    title: 'Oficial de Datos',
-    company: 'CGE S.A.',
-    location: 'Región Metropolitana de Santiago, Chile',
-    description:
-      'En CGE buscamos un/a Oficial de Datos (base Las Condes), donde deberá disferir y ejecutar proyectos de inteligencia artificial, analítica avanzada y gobierno de datos, que permitan extraer conocimiento e insights de los datos para mejorar la toma de decisiones y optimizar los procesos.',
-    requirements: ['Identificar y priorizar las necesidades y oportunidades de negocio que...'],
-  },
-  {
-    id: 2,
-    title: 'Técnico Informático',
-    company: 'SQM',
-    location: 'Región de Coquimbo, Chile',
-    description:
-      'Subido por Javier Lopez Jaramillo. Compañía líder que aborda todo tipo de proyectos. En la actualidad requiere al alumno de la carrera de Ingeniería Civil Informática/Técnico Informático para desempeñarse en la Serena Santiago para el proyecto de AutoPista Concesionada.',
-    requirements: ['Cumples con los aspectos que se evalúan? Si es así, esta puede ser la oportunidad perfecta para ti.'],
-  },
-];
+interface JobsQueryResponse {
+  offers: {
+    success: boolean;
+    message: string;
+    data: Job[];
+  };
+}
+
+interface CreateOfferInput {
+  title: string;
+  description: string;
+  company: string;
+  location: string;
+  salary: string;
+  isInternship: boolean;
+}
 
 const HomeScreen: React.FC = () => {
   const navigate = useNavigate();
   const client = useApolloClient();
 
-  const { data, loading, error } = useQuery<UserQueryResponse>(GET_USER_INFO);
+  // Fetch user info
+  const { data: userData, loading: userLoading, error: userError } = useQuery<UserQueryResponse>(GET_USER_INFO);
 
-  const user = data?.getUserProfile?.data;
+  // Fetch job offers
+  const { data: jobsData, loading: jobsLoading, error: jobsError } = useQuery<JobsQueryResponse>(GET_APPLICATIONS, {
+    onError: (error) => {
+      console.error('GET_APPLICATIONS Error:', {
+        message: error.message,
+        graphQLErrors: error.graphQLErrors,
+        networkError: error.networkError,
+        extraInfo: error.extraInfo,
+      });
+    },
+  });
+
+  // Mutation for creating a new offer
+  const [createOffer, { error: createOfferError }] = useMutation(CREATE_APPLICATION, {
+    refetchQueries: [{ query: GET_APPLICATIONS }],
+    onError: (error) => {
+      console.error('CREATE_APPLICATION Error:', {
+        message: error.message,
+        graphQLErrors: error.graphQLErrors,
+        networkError: error.networkError,
+      });
+    },
+  });
+
+  // State for new offer form
+  const [newOffer, setNewOffer] = useState<CreateOfferInput>({
+    title: '',
+    description: '',
+    company: '',
+    location: '',
+    salary: '',
+    isInternship: false,
+  });
+
+  const [showCreateOffer, setShowCreateOffer] = useState(false);
+
+  const user = userData?.getUserProfile?.data;
   const userName = user?.name || 'Usuario';
   const userRole =
-  user?.role === 'student'
-    ? 'Estudiante'
-    : user?.role === 'head_of_career' || user?.role === 'jefatura'
-    ? 'Jefatura'
-    : user?.role || 'Estudiante';
+    user?.role === 'student'
+      ? 'Estudiante'
+      : user?.role === 'head_of_career'
+      ? 'Jefe de Carrera'
+      : user?.role || 'Usuario';
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -71,8 +108,58 @@ const HomeScreen: React.FC = () => {
     navigate('/');
   };
 
-  if (loading) return <div style={HomeStyles.container}>Cargando...</div>;
-  if (error) return <div style={HomeStyles.container}>Error al cargar los datos del usuario</div>;
+  const handleCreateOffer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await createOffer({
+        variables: {
+          input: {
+            ...newOffer,
+            salary: parseFloat(newOffer.salary) || 0, // Fallback to 0 if invalid
+            isInternship: Boolean(newOffer.isInternship),
+          },
+        },
+      });
+      // Reset form
+      setNewOffer({
+        title: '',
+        description: '',
+        company: '',
+        location: '',
+        salary: '',
+        isInternship: false,
+      });
+    } catch (error) {
+      console.error('Error creating offer:', error);
+      alert('Error al crear la oferta: ' + (error instanceof Error ? error.message : 'Desconocido'));
+    }
+  };
+
+  const handleApply = (jobId: string) => {
+    alert(`Applied to job with ID: ${jobId}`);
+  };
+
+  if (userLoading || jobsLoading) return <div style={HomeStyles.container}>Cargando...</div>;
+  if (userError)
+    return (
+      <div style={HomeStyles.container}>
+        Error al cargar los datos del usuario: {userError.message}
+      </div>
+    );
+  if (jobsError)
+    return (
+      <div style={HomeStyles.container}>
+        Error al cargar las ofertas: {jobsError.message}
+        <pre>{JSON.stringify({ graphQLErrors: jobsError.graphQLErrors, networkError: jobsError.networkError }, null, 2)}</pre>
+      </div>
+    );
+
+  const jobs = jobsData?.offers?.data || [];
+
+  const formatFecha = (isoDate: string) => {
+    const fecha = new Date(isoDate);
+    return `Publicado el ${fecha.getDate()} de ${fecha.toLocaleString('es-ES', { month: 'long', timeZone: 'America/Santiago' })} de ${fecha.getFullYear()} a las ${fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Santiago' })}`;
+  };
 
   return (
     <div style={HomeStyles.container}>
@@ -82,17 +169,21 @@ const HomeScreen: React.FC = () => {
           <img src="/LinkedICCI Logo.png" alt="LinkedICCI Logo" style={HomeStyles.logoImage} />
         </div>
         <div style={HomeStyles.userProfile}>
-          <img src="/user-icon.png" alt="User Photo" style={HomeStyles.userPhoto} />
+          <img src="/user-icon.png" alt="User" style={HomeStyles.userPhoto} />
           <p style={HomeStyles.userName}>{userName.toUpperCase()}</p>
           <p style={HomeStyles.userData}>{user?.email}</p>
           <p style={HomeStyles.userData}>{userRole}</p>
         </div>
-        <button style={HomeStyles.sidebarButton} onClick={() => navigate('/cv')}>
-          📄 Mi CV
-        </button>
-        <button style={HomeStyles.sidebarButton} onClick={() => navigate('/postulaciones')}>
-          ⭐ Mis Postulaciones
-        </button>
+        {user?.role === 'student' && (
+          <>
+            <button style={HomeStyles.sidebarButton} onClick={() => navigate('/cv')}>
+              📄 Mi CV
+            </button>
+            <button style={HomeStyles.sidebarButton} onClick={() => navigate('/postulaciones')}>
+              ⭐ Mis Postulaciones
+            </button>
+          </>
+        )}
         <div style={HomeStyles.searchContainer}>
           <input type="text" placeholder="Buscar Ofertas" style={HomeStyles.searchInput} />
         </div>
@@ -104,29 +195,134 @@ const HomeScreen: React.FC = () => {
       {/* Main Content */}
       <div style={HomeStyles.mainContent}>
         <h1 style={HomeStyles.sectionTitle}>Ofertas Vigentes</h1>
-        {mockJobs.map((job) => (
-          <div key={job.id} style={HomeStyles.jobCard}>
-            <div style={HomeStyles.jobHeader}>
-              <h2 style={HomeStyles.jobTitle}>{job.title}</h2>
-              <img
-                src={`/path-to-${job.company.toLowerCase()}-logo.png`}
-                alt={`${job.company} Logo`}
-                style={HomeStyles.companyLogo}
-              />
-            </div>
-            <p style={HomeStyles.jobLocation}>
-              {job.company}, {job.location}
-            </p>
-            <p style={HomeStyles.jobDescription}>{job.description}</p>
-            <h3 style={HomeStyles.jobSubtitle}>Principales Funciones:</h3>
-            <ul style={HomeStyles.jobRequirements}>
-              {job.requirements.map((req, index) => (
-                <li key={index}>{req}</li>
-              ))}
-            </ul>
-            <button style={HomeStyles.applyButton}>☆ Postular</button>
+        {/* Create Offer Form (only for head_of_career) */}
+        {user?.role === 'head_of_career' && (
+          <>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+            <button
+              style={HomeStyles.createJobButton }
+              onClick={() => setShowCreateOffer(true)}
+              type="button"
+            >
+              Crear Oferta
+            </button>
           </div>
-        ))}
+            {/* Popup */}
+            {showCreateOffer && (
+              <div style={HomeStyles.createJobContainer}>
+                <div style={ HomeStyles.createJobPopup }>
+                  <h2 style={HomeStyles.boxTitle}>Crear Nueva Oferta</h2>
+                  {createOfferError && (
+                    <p style={{ color: 'red' }}>Error al crear oferta: {createOfferError.message}</p>
+                  )}
+                  <form
+                    onSubmit={async (e) => {
+                      await handleCreateOffer(e);
+                      setShowCreateOffer(false);
+                    }}
+                    style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '500px' }}
+                  >
+                    <input
+                      type="text"
+                      placeholder="Título"
+                      value={newOffer.title}
+                      onChange={(e) => setNewOffer({ ...newOffer, title: e.target.value })}
+                      style={HomeStyles.searchInput}
+                      required
+                    />
+                    <textarea
+                      placeholder="Descripción"
+                      value={newOffer.description}
+                      onChange={(e) => setNewOffer({ ...newOffer, description: e.target.value })}
+                      style={{ ...HomeStyles.searchInput, fontFamily: 'sans-serif' , minHeight: '100px' }}
+                      required
+                    />
+                    <input
+                      type="text"
+                      placeholder="Empresa"
+                      value={newOffer.company}
+                      onChange={(e) => setNewOffer({ ...newOffer, company: e.target.value })}
+                      style={HomeStyles.searchInput}
+                      required
+                    />
+                    <input
+                      type="text"
+                      placeholder="Ubicación"
+                      value={newOffer.location}
+                      onChange={(e) => setNewOffer({ ...newOffer, location: e.target.value })}
+                      style={HomeStyles.searchInput}
+                      required
+                    />
+                    <input
+                      type="number"
+                      placeholder="Salario"
+                      value={newOffer.salary}
+                      onChange={(e) => setNewOffer({ ...newOffer, salary: e.target.value })}
+                      style={HomeStyles.searchInput}
+                      required
+                    />
+                    <label style={HomeStyles.boxIsInternship}>
+                      <input
+                        type="checkbox"
+                        checked={newOffer.isInternship}
+                        onChange={(e) => setNewOffer({ ...newOffer, isInternship: e.target.checked })}
+                      />
+                      ¿Es práctica?
+                    </label>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '10px' }}>
+                      <button type="submit" style={HomeStyles.createJobButton}>
+                        Crear Oferta
+                      </button>
+                      <button
+                        type="button"
+                        style={{ ...HomeStyles.createJobButton, backgroundColor: '#7f1313', border: '1px solid #7f1313', color: '#fff' }}
+                        onClick={() => setShowCreateOffer(false)}
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Job Listings */}
+        {jobs.length === 0 ? (
+          <p>No hay ofertas disponibles.</p>
+        ) : (
+          jobs.map((job) => (
+            <div key={job.id} style={HomeStyles.jobCard}>
+              <div style={HomeStyles.jobHeader}>
+                <h2 style={HomeStyles.jobTitle}>{job.title}</h2>
+              </div>
+              <div style={{ margin: '8px 0' }}>
+                <span style={HomeStyles.jobType}>
+                  {job.isInternship ? 'Práctica' : 'Empleo Regular'}
+                </span>
+              </div>
+              <p style={HomeStyles.jobLocation}>
+                {job.company}, {job.location}
+              </p>
+              <p style={HomeStyles.jobLocation}>{formatFecha(job.createdAt)}</p>
+              <p style={HomeStyles.jobDescription}>Descripción: {job.description}</p>
+              <p style={HomeStyles.jobDescription}>Salario: ${job.salary}</p>
+              {user?.role === 'head_of_career' ? (
+                <button
+                  style={HomeStyles.applicantsButton}
+                  onClick={() => navigate(`/oferta/${job.id}/postulaciones`)}
+                >
+                  Ver postulaciones
+                </button>
+              ) : (
+                <button style={HomeStyles.applyButton} onClick={() => handleApply(job.id)}>
+                  ☆ Postular
+                </button>
+              )}
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
