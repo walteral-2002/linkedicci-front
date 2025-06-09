@@ -1,6 +1,6 @@
 import { CSSProperties } from 'react';
 
-const HomeStyles: { [key: string]: CSSProperties } = {
+const OfferStyles: { [key: string]: CSSProperties } = {
   applicantsButton: {
     backgroundColor: '#1e4d04',
     border: '1px solid #1e4d04',
@@ -187,12 +187,6 @@ const HomeStyles: { [key: string]: CSSProperties } = {
     fontSize: '40px',
     fontWeight: 'bold',
     color: '#1e4d04',
-    marginBottom: '10px',
-  },
-  sectionSubtitle: {
-    textAlign: 'center',
-    fontSize: '16px',
-    color: '#555454',
     marginBottom: '20px',
   },
   sidebar: {
@@ -243,4 +237,4 @@ const HomeStyles: { [key: string]: CSSProperties } = {
   },
 };
 
-export default HomeStyles;
+export default OfferStyles;

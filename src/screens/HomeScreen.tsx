@@ -54,10 +54,7 @@ const HomeScreen: React.FC = () => {
   const navigate = useNavigate();
   const client = useApolloClient();
 
-  // Fetch user info
   const { data: userData, loading: userLoading, error: userError } = useQuery<UserQueryResponse>(GET_USER_INFO);
-
-  // Fetch job offers
   const { data: jobsData, loading: jobsLoading, error: jobsError } = useQuery<JobsQueryResponse>(GET_APPLICATIONS, {
     onError: (error) => {
       console.error('GET_APPLICATIONS Error:', {
@@ -166,7 +163,7 @@ const HomeScreen: React.FC = () => {
       {/* Fixed Sidebar */}
       <div style={HomeStyles.sidebar}>
         <div style={HomeStyles.logoContainer}>
-          <img src="/LinkedICCI Logo.png" alt="LinkedICCI Logo" style={HomeStyles.logoImage} />
+          <img src="/LinkedICCI Logo.png" alt="LinkedICCI Logo" style={HomeStyles.logoImage} onClick={() => navigate('/Home')} />
         </div>
         <div style={HomeStyles.userProfile}>
           <img src="/user-icon.png" alt="User" style={HomeStyles.userPhoto} />
@@ -195,15 +192,13 @@ const HomeScreen: React.FC = () => {
       {/* Main Content */}
       <div style={HomeStyles.mainContent}>
         <h1 style={HomeStyles.sectionTitle}>Ofertas Vigentes</h1>
+        <h1 style={HomeStyles.sectionSubtitle}> Para ver más detalles, haga click en el título de la oferta</h1>
+        
         {/* Create Offer Form (only for head_of_career) */}
         {user?.role === 'head_of_career' && (
           <>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-            <button
-              style={HomeStyles.createJobButton }
-              onClick={() => setShowCreateOffer(true)}
-              type="button"
-            >
+            <button style={HomeStyles.createJobButton } onClick={() => setShowCreateOffer(true)} type="button">
               Crear Oferta
             </button>
           </div>
@@ -295,7 +290,9 @@ const HomeScreen: React.FC = () => {
           jobs.map((job) => (
             <div key={job.id} style={HomeStyles.jobCard}>
               <div style={HomeStyles.jobHeader}>
-                <h2 style={HomeStyles.jobTitle}>{job.title}</h2>
+                <h2 style={{ ...HomeStyles.jobTitle, cursor: 'pointer', textDecoration: 'underline' }} onClick={() => navigate(`/offer/${job.id}`)}>
+                 {job.title}
+                </h2>
               </div>
               <div style={{ margin: '8px 0' }}>
                 <span style={HomeStyles.jobType}>

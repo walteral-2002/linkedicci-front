@@ -35,3 +35,24 @@ export const GET_APPLICATIONS = gql`
     } 
   }
 `;
+
+export const GET_OFFER_BY_ID = gql`
+  query GetOffer($id: String!) {
+    offer(id: $id) {
+      success
+      message
+      data {
+        id
+        title
+        description
+        company
+        location
+        salary
+        createdByHeadOfCareerId
+        isInternship
+        createdAt
+        updatedAt
+      }
+    }
+  }
+`;
