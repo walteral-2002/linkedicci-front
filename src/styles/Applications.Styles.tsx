@@ -1,6 +1,6 @@
 import { CSSProperties } from 'react';
 
-const HomeStyles: { [key: string]: CSSProperties } = {
+const ApplicationStyles: { [key: string]: CSSProperties } = {
   applicantsButton: {
     backgroundColor: '#1e4d04',
     border: '1px solid #1e4d04',
@@ -182,17 +182,17 @@ const HomeStyles: { [key: string]: CSSProperties } = {
     fontSize: '14px',
     boxSizing: 'border-box',
   },
+  sectionSubtitle: {
+    textAlign: 'center',
+    fontSize: '16px',
+    color: '#555454',
+    marginBottom: '20px',
+  },
   sectionTitle: {
     textAlign: 'center',
     fontSize: '40px',
     fontWeight: 'bold',
     color: '#1e4d04',
-    marginBottom: '10px',
-  },
-  sectionSubtitle: {
-    textAlign: 'center',
-    fontSize: '16px',
-    color: '#555454',
     marginBottom: '20px',
   },
   sidebar: {
@@ -204,7 +204,6 @@ const HomeStyles: { [key: string]: CSSProperties } = {
     flexDirection: 'column',
     alignItems: 'center',
     padding: '20px 0',
-    
   },
   sidebarButton: {
     width: '80%',
@@ -244,4 +243,4 @@ const HomeStyles: { [key: string]: CSSProperties } = {
   },
 };
 
-export default HomeStyles;
+export default ApplicationStyles;

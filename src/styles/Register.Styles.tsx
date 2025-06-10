@@ -1,3 +1,5 @@
+import { cursorTo } from "readline";
+
 const RegisterStyles = {
     button: {
         padding: '10px 20px',
@@ -83,6 +85,7 @@ const RegisterStyles = {
         position: 'absolute' as 'absolute',
         top: '20px',
         left: '20px',
+        cursor: 'pointer',
     },
     title: {
         color: '#fff',

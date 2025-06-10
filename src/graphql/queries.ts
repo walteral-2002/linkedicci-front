@@ -56,3 +56,37 @@ export const GET_OFFER_BY_ID = gql`
     }
   }
 `;
+
+export const GET_USER_APPLICATIONS = gql`
+  query getApplicationsByStudent { 
+    getApplicationsByStudent { 
+      success 
+      message 
+      data { 
+        id 
+        offerId 
+        studentId 
+        message 
+        status 
+        createdAt 
+      } 
+    } 
+  }
+`;
+
+export const GET_APPLICANTS_BY_OFFER = gql`
+  query GetApplicants($offerId: String!) { 
+    getApplicantsByOffer(offerId: $offerId) { 
+      success 
+      message 
+      data { 
+        id 
+        offerId 
+        studentId 
+        message 
+        status 
+        createdAt 
+      } 
+    } 
+  }
+`;

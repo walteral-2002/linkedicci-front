@@ -44,3 +44,24 @@ mutation CreateOffer($input: CreateOfferDto!) {
     }
 }
 `;
+
+export const APPLY_TO_OFFER = gql`
+  mutation ApplyToOffer($input: ApplyToOfferDto!) { 
+    applyToOffer(input: $input) { 
+      success 
+      message 
+      data { 
+        id 
+        title 
+        description 
+        company 
+        location 
+        salary 
+        isInternship 
+        createdByHeadOfCareerId 
+        createdAt 
+        updatedAt 
+      } 
+    } 
+  }
+`;

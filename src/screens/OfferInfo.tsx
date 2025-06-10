@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useApolloClient, useQuery } from '@apollo/client';
-import { GET_OFFER_BY_ID, GET_USER_INFO } from '../graphql/queries';
+import { useApolloClient, useMutation, useQuery } from '@apollo/client';
+import { GET_OFFER_BY_ID, GET_USER_INFO, GET_USER_APPLICATIONS } from '../graphql/queries';
+import { APPLY_TO_OFFER } from '../graphql/mutations';
 import OfferStyles from '../styles/OfferInfo.Styles';
-import { off } from 'process';
 
 interface User {
   id: string;
@@ -51,7 +51,11 @@ const OfferInfo = () => {
     variables: { id },
     skip: !id,
   });
+  const { data: applicationsData, refetch: refetchApplications } = useQuery<any>(GET_USER_APPLICATIONS);
 
+  const [showApplyPopup, setShowApplyPopup] = useState(false);
+  const [applyMessage, setApplyMessage] = useState('');
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const offer = offerData?.offer?.data;
   const user = userData?.getUserProfile?.data;
   const userName = user?.name || 'Usuario';
@@ -68,9 +72,38 @@ const OfferInfo = () => {
     navigate('/');
   };
 
-  const handleApply = (jobId: string) => {
-    alert(`Applied to job with ID: ${jobId}`);
+  const [applyToOffer, { error: applyError }] = useMutation(APPLY_TO_OFFER, {
+    onCompleted: () => {
+      setShowApplyPopup(false);
+      setApplyMessage('');
+      setSelectedJob(null);
+      refetchApplications();
+    },
+    onError: (error) => {
+      alert('Error al postular: ' + error.message);
+    },
+  });
+
+  const handleApply = (job: Job, existingMessage?: string) => {
+    setSelectedJob(job);
+    setApplyMessage(existingMessage || '');
+    setShowApplyPopup(true);
   };
+
+  const handleSubmitApplication = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedJob) return;
+    await applyToOffer({
+      variables: {
+        input: {
+          offerId: selectedJob.id,
+          message: applyMessage,
+        },
+      },
+    });
+  };
+
+  const userApplications = applicationsData?.getApplicationsByStudent?.data || [];
 
   if (userLoading || offerLoading) return <div style={OfferStyles.container}>Cargando...</div>;
   if (userError)
@@ -90,6 +123,8 @@ const OfferInfo = () => {
     const fecha = new Date(isoDate);
     return `${fecha.getDate()} de ${fecha.toLocaleString('es-ES', { month: 'long', timeZone: 'America/Santiago' })} de ${fecha.getFullYear()} a las ${fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Santiago' })}`;
   };
+    
+  const application = userApplications.find((a: any) => a.offerId === offer?.id);
 
   return (
     <div style={OfferStyles.container}>
@@ -109,7 +144,7 @@ const OfferInfo = () => {
             <button style={OfferStyles.sidebarButton} onClick={() => navigate('/cv')}>
               📄 Mi CV
             </button>
-            <button style={OfferStyles.sidebarButton} onClick={() => navigate('/postulaciones')}>
+            <button style={OfferStyles.sidebarButton} onClick={() => navigate('/applications')}>
               ⭐ Mis Postulaciones
             </button>
           </>
@@ -123,6 +158,44 @@ const OfferInfo = () => {
       </div>
       {/* Main Content */}
       <div style={OfferStyles.mainContent}>
+
+                {showApplyPopup && (
+          <div style={OfferStyles.createJobContainer}>
+            <div style={OfferStyles.createJobPopup}>
+              <h2 style={OfferStyles.boxTitle}>
+                {userApplications.find((a: any) => a.offerId === selectedJob?.id)
+                  ? 'Mensaje de tu postulación'
+                  : 'Postular a la oferta'}
+              </h2>
+              <form onSubmit={handleSubmitApplication} style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '500px' }}>
+                <textarea
+                  placeholder="Escribe un mensaje para tu postulación"
+                  value={applyMessage}
+                  onChange={(e) => setApplyMessage(e.target.value)}
+                  style={{ ...OfferStyles.searchInput, fontFamily: 'sans-serif', minHeight: '80px' }}
+                  required
+                  disabled={!!userApplications.find((a: any) => a.offerId === selectedJob?.id)}
+                />
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '10px' }}>
+                  {!userApplications.find((a: any) => a.offerId === selectedJob?.id) && (
+                    <button type="submit" style={OfferStyles.createJobButton}>
+                      Enviar Postulación
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    style={{ ...OfferStyles.createJobButton, backgroundColor: '#7f1313', border: '1px solid #7f1313', color: '#fff' }}
+                    onClick={() => setShowApplyPopup(false)}
+                  >
+                    Cerrar
+                  </button>
+                </div>
+                {applyError && <p style={{ color: 'red' }}>{applyError.message}</p>}
+              </form>
+            </div>
+          </div>
+        )}
+
         <h1 style={OfferStyles.sectionTitle}>Información de la Oferta</h1>
         {offer ? (
           <div style={OfferStyles.jobCard}>
@@ -149,8 +222,12 @@ const OfferInfo = () => {
                 >
                   Ver postulaciones
                 </button>
+              ) : application ? (
+                <button style={{ ...OfferStyles.applyButton, backgroundColor: '#1e4d04', color: '#ffffff' }} onClick={() => handleApply(offer, application.message)} >
+                    Pendiente
+                </button>
               ) : (
-                <button style={OfferStyles.applyButton} onClick={() => handleApply(offer.id)}>
+                <button style={OfferStyles.applyButton} onClick={() => handleApply(offer)}>
                   ☆ Postular
                 </button>
               )}

@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApolloClient, useQuery, useMutation } from '@apollo/client';
 import HomeStyles from '../styles/HomeScreen.Styles';
-import { GET_USER_INFO, GET_APPLICATIONS } from '../graphql/queries';
-import { CREATE_APPLICATION } from '../graphql/mutations';
+import { GET_USER_INFO, GET_APPLICATIONS, GET_USER_APPLICATIONS } from '../graphql/queries';
+import { CREATE_APPLICATION, APPLY_TO_OFFER } from '../graphql/mutations';
 
 interface User {
   id: string;
@@ -65,6 +65,11 @@ const HomeScreen: React.FC = () => {
       });
     },
   });
+  const { data: applicationsData, refetch: refetchApplications } = useQuery<any>(GET_USER_APPLICATIONS);
+
+  const [showApplyPopup, setShowApplyPopup] = useState(false);
+  const [applyMessage, setApplyMessage] = useState('');
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
 
   // Mutation for creating a new offer
   const [createOffer, { error: createOfferError }] = useMutation(CREATE_APPLICATION, {
@@ -132,9 +137,38 @@ const HomeScreen: React.FC = () => {
     }
   };
 
-  const handleApply = (jobId: string) => {
-    alert(`Applied to job with ID: ${jobId}`);
+  const [applyToOffer, { error: applyError }] = useMutation(APPLY_TO_OFFER, {
+    onCompleted: () => {
+      setShowApplyPopup(false);
+      setApplyMessage('');
+      setSelectedJob(null);
+      refetchApplications();
+    },
+    onError: (error) => {
+      alert('Error al postular: ' + error.message);
+    },
+  });
+
+  const handleApply = (job: Job, existingMessage?: string) => {
+    setSelectedJob(job);
+    setApplyMessage(existingMessage || '');
+    setShowApplyPopup(true);
   };
+
+  const handleSubmitApplication = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedJob) return;
+    await applyToOffer({
+      variables: {
+        input: {
+          offerId: selectedJob.id,
+          message: applyMessage,
+        },
+      },
+    });
+  };
+
+  const userApplications = applicationsData?.getApplicationsByStudent?.data || [];
 
   if (userLoading || jobsLoading) return <div style={HomeStyles.container}>Cargando...</div>;
   if (userError)
@@ -163,7 +197,7 @@ const HomeScreen: React.FC = () => {
       {/* Fixed Sidebar */}
       <div style={HomeStyles.sidebar}>
         <div style={HomeStyles.logoContainer}>
-          <img src="/LinkedICCI Logo.png" alt="LinkedICCI Logo" style={HomeStyles.logoImage} onClick={() => navigate('/Home')} />
+          <img src="/LinkedICCI Logo.png" alt="LinkedICCI Logo" style={HomeStyles.logoImage} onClick={() => window.location.reload()} />
         </div>
         <div style={HomeStyles.userProfile}>
           <img src="/user-icon.png" alt="User" style={HomeStyles.userPhoto} />
@@ -176,7 +210,7 @@ const HomeScreen: React.FC = () => {
             <button style={HomeStyles.sidebarButton} onClick={() => navigate('/cv')}>
               📄 Mi CV
             </button>
-            <button style={HomeStyles.sidebarButton} onClick={() => navigate('/postulaciones')}>
+            <button style={HomeStyles.sidebarButton} onClick={() => navigate('/applications')}>
               ⭐ Mis Postulaciones
             </button>
           </>
@@ -283,42 +317,97 @@ const HomeScreen: React.FC = () => {
           </>
         )}
 
+        {/* Popup de postulación */}
+        {showApplyPopup && (
+          <div style={HomeStyles.createJobContainer}>
+            <div style={HomeStyles.createJobPopup}>
+              <h2 style={{...HomeStyles.boxTitle }}>
+                {userApplications.find((a: any) => a.offerId === selectedJob?.id)
+                  ? 'Mensaje de su postulación'
+                  : 'Postular a la oferta'}
+              </h2>
+              <form onSubmit={handleSubmitApplication} style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '500px' }}>
+                <textarea
+                  placeholder="Escribe un mensaje para tu postulación"
+                  value={applyMessage}
+                  onChange={(e) => setApplyMessage(e.target.value)}
+                  style={{ ...HomeStyles.searchInput, fontFamily: 'sans-serif', minHeight: '80px' }}
+                  required
+                  disabled={!!userApplications.find((a: any) => a.offerId === selectedJob?.id)}
+                />
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '10px' }}>
+                  {!userApplications.find((a: any) => a.offerId === selectedJob?.id) && (
+                    <button type="submit" style={HomeStyles.createJobButton}>
+                      Enviar Postulación
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    style={{ ...HomeStyles.createJobButton, backgroundColor: '#7f1313', border: '1px solid #7f1313', color: '#fff' }}
+                    onClick={() => setShowApplyPopup(false)}
+                  >
+                    Cerrar
+                  </button>
+                </div>
+                {applyError && <p style={{ color: 'red' }}>{applyError.message}</p>}
+              </form>
+            </div>
+          </div>
+        )}
+
         {/* Job Listings */}
         {jobs.length === 0 ? (
           <p>No hay ofertas disponibles.</p>
         ) : (
-          jobs.map((job) => (
-            <div key={job.id} style={HomeStyles.jobCard}>
-              <div style={HomeStyles.jobHeader}>
-                <h2 style={{ ...HomeStyles.jobTitle, cursor: 'pointer', textDecoration: 'underline' }} onClick={() => navigate(`/offer/${job.id}`)}>
-                 {job.title}
-                </h2>
+                    jobs.map((job) => {
+            // Verificar si el usuario ya postuló a esta oferta
+            const application = userApplications.find((a: any) => a.offerId === job.id);
+            return (
+              <div key={job.id} style={HomeStyles.jobCard}>
+                <div style={HomeStyles.jobHeader}>
+                  <h2
+                    style={{ ...HomeStyles.jobTitle, cursor: 'pointer', textDecoration: 'underline' }}
+                    onClick={() => navigate(`/offer/${job.id}`)}
+                  >
+                    {job.title}
+                  </h2>
+                </div>
+                <div style={{ margin: '8px 0' }}>
+                  <span style={HomeStyles.jobType}>
+                    {job.isInternship ? 'Práctica' : 'Empleo Regular'}
+                  </span>
+                </div>
+                <p style={HomeStyles.jobLocation}>
+                  {job.company}, {job.location}
+                </p>
+                <p style={HomeStyles.jobLocation}>{formatFecha(job.createdAt)}</p>
+                <p style={HomeStyles.jobDescription}>Descripción: {job.description}</p>
+                <p style={HomeStyles.jobDescription}>Salario: ${job.salary}</p>
+                {user?.role === 'head_of_career' ? (
+                  <button
+                    style={HomeStyles.applicantsButton}
+                    onClick={() => navigate(`/oferta/${job.id}/postulaciones`)}
+                  >
+                    Ver postulaciones
+                  </button>
+                ) : application ? (
+                  <button
+                    style={{ ...HomeStyles.applyButton, backgroundColor: '#1e4d04', color: '#ffffff' }}
+                    onClick={() => handleApply(job, application.message)}
+                  >
+                    Pendiente
+                  </button>
+                ) : (
+                  <button
+                    style={HomeStyles.applyButton}
+                    onClick={() => handleApply(job)}
+                  >
+                    ☆ Postular
+                  </button>
+                )}
               </div>
-              <div style={{ margin: '8px 0' }}>
-                <span style={HomeStyles.jobType}>
-                  {job.isInternship ? 'Práctica' : 'Empleo Regular'}
-                </span>
-              </div>
-              <p style={HomeStyles.jobLocation}>
-                {job.company}, {job.location}
-              </p>
-              <p style={HomeStyles.jobLocation}>{formatFecha(job.createdAt)}</p>
-              <p style={HomeStyles.jobDescription}>Descripción: {job.description}</p>
-              <p style={HomeStyles.jobDescription}>Salario: ${job.salary}</p>
-              {user?.role === 'head_of_career' ? (
-                <button
-                  style={HomeStyles.applicantsButton}
-                  onClick={() => navigate(`/oferta/${job.id}/postulaciones`)}
-                >
-                  Ver postulaciones
-                </button>
-              ) : (
-                <button style={HomeStyles.applyButton} onClick={() => handleApply(job.id)}>
-                  ☆ Postular
-                </button>
-              )}
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

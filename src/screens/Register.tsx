@@ -143,7 +143,7 @@ const Register = () => {
     return (
     <div style={RegisterStyles.container}>
         
-      <img src="/LinkedICCI Logo.png" alt="LinkedICCI Logo" style={RegisterStyles.logoImage} />
+      <img src="/LinkedICCI Logo.png" alt="LinkedICCI Logo" style={RegisterStyles.logoImage} onClick={() => navigate('/')}/>
 
 
       <div style={RegisterStyles.centeredContent}>

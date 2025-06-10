@@ -3,8 +3,7 @@ import HomeScreen from './screens/HomeScreen';
 import Login from './screens/Login';
 import Register from './screens/Register';
 import OfferInfo from './screens/OfferInfo';
-
-import React from 'react';
+import Applications from './screens/Applications';
 
 function App() {
   return (
@@ -14,6 +13,7 @@ function App() {
         <Route path="/Home" element={<HomeScreen />} />
         <Route path="/register" element={<Register />} />
         <Route path="/offer/:id" element={<OfferInfo />} />
+        <Route path="/applications" element={<Applications />} />
       </Routes>
     </Router>
   );
