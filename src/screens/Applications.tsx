@@ -204,14 +204,34 @@ const Applications = () => {
                 {user?.role === 'head_of_career' ? (
                   <button
                     style={ApplicationStyles.applicantsButton}
-                    onClick={() => navigate(`/oferta/${job.id}/postulaciones`)}
+                    onClick={() => navigate(`/offer/applicants/${job.id}`)}
                   >
                     Ver postulaciones
                   </button>
                 ) : (
-                  <button style={{ ...ApplicationStyles.applyButton, backgroundColor: '#1e4d04', color: '#ffffff' }} onClick={() => handleApply(job, application.message)} >
-                    Pendiente
-                  </button>
+                  // Mostrar el botón según el estado de la postulación
+                  application?.status === 'pending' ? (
+                    <button
+                      style={{ ...ApplicationStyles.applyButton, backgroundColor: '#695d0d', borderColor: '#695d0d', color: '#ffffff' }}
+                      onClick={() => handleApply(job, application.message)}
+                    >
+                      Pendiente
+                    </button>
+                  ) : application?.status === 'accepted' ? (
+                    <button
+                      style={{ ...ApplicationStyles.applyButton, backgroundColor: '#1e4d04', color: '#ffffff', cursor: 'default' }}
+                      disabled
+                    >
+                      ✓ Aceptado
+                    </button>
+                  ) : application?.status === 'rejected' ? (
+                    <button
+                      style={{ ...ApplicationStyles.applyButton, backgroundColor: '#7f1313', color: '#ffffff', borderColor: '#7f1313', cursor: 'default' }}
+                      disabled
+                    >
+                      X Rechazado
+                    </button>
+                  ) : null
                 )}
               </div>
             );

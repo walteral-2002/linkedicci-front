@@ -65,3 +65,12 @@ export const APPLY_TO_OFFER = gql`
     } 
   }
 `;
+
+export const DECIDE_APPLICATION = gql`
+  mutation UpdateStatus($input: UpdateApplicationStatusDto!) { 
+    updateApplicationStatus(input: $input) { 
+      success 
+      message 
+    } 
+  }
+`;

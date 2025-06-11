@@ -37,23 +37,23 @@ export const GET_APPLICATIONS = gql`
 `;
 
 export const GET_OFFER_BY_ID = gql`
-  query GetOffer($id: String!) {
-    offer(id: $id) {
-      success
-      message
-      data {
-        id
-        title
-        description
-        company
-        location
-        salary
-        createdByHeadOfCareerId
-        isInternship
-        createdAt
+  query GetOffer($id: String!) { 
+    offer(id: $id) { 
+      success 
+      message 
+      data { 
+        id 
+        title 
+        description 
+        company 
+        location 
+        salary 
+        createdByHeadOfCareerId 
+        isInternship 
+        createdAt 
         updatedAt
-      }
-    }
+      } 
+    } 
   }
 `;
 
@@ -88,5 +88,20 @@ export const GET_APPLICANTS_BY_OFFER = gql`
         createdAt 
       } 
     } 
+  }
+`;
+
+export const GET_USER_BY_ID = gql`
+  query GetUser($id: String!){
+    getUser(id: $id){
+      success
+      message
+      data{
+        id
+        name
+        email
+        role
+      }
+    }
   }
 `;

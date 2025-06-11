@@ -218,18 +218,38 @@ const OfferInfo = () => {
               {user?.role === 'head_of_career' ? (
                 <button
                   style={OfferStyles.applicantsButton}
-                  onClick={() => navigate(`/oferta/${offer.id}/postulaciones`)}
+                  onClick={() => navigate(`/offer/applicants/${offer.id}`)}
                 >
                   Ver postulaciones
                 </button>
-              ) : application ? (
-                <button style={{ ...OfferStyles.applyButton, backgroundColor: '#1e4d04', color: '#ffffff' }} onClick={() => handleApply(offer, application.message)} >
-                    Pendiente
-                </button>
               ) : (
+                // Mostrar el botón según el estado de la postulación
+                application?.status === 'pending' ? (
+                  <button
+                    style={{ ...OfferStyles.applyButton, backgroundColor: '#695d0d', borderBlock: '#695d0d', color: '#ffffff' }}
+                    onClick={() => handleApply(offer, application.message)}
+                  >
+                    Pendiente
+                  </button>
+                ) : application?.status === 'accepted' ? (
+                  <button
+                    style={{ ...OfferStyles.applyButton, backgroundColor: '#1e4d04', color: '#ffffff', cursor: 'default' }}
+                    disabled
+                  >
+                    ✓ Aceptado
+                  </button>
+                ) : application?.status === 'rejected' ? (
+                  <button
+                    style={{ ...OfferStyles.applyButton, backgroundColor: '#7f1313', borderColor: '#7f1313', color: '#ffffff', cursor: 'default' }}
+                    disabled
+                  >
+                    X Rechazado
+                  </button>
+                ) : (
                 <button style={OfferStyles.applyButton} onClick={() => handleApply(offer)}>
                   ☆ Postular
                 </button>
+                )
               )}
             </div>
         ) : (

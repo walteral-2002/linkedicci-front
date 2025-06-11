@@ -386,24 +386,41 @@ const HomeScreen: React.FC = () => {
                 {user?.role === 'head_of_career' ? (
                   <button
                     style={HomeStyles.applicantsButton}
-                    onClick={() => navigate(`/oferta/${job.id}/postulaciones`)}
+                    onClick={() => navigate(`/offer/applicants/${job.id}`)}
                   >
                     Ver postulaciones
                   </button>
-                ) : application ? (
-                  <button
-                    style={{ ...HomeStyles.applyButton, backgroundColor: '#1e4d04', color: '#ffffff' }}
-                    onClick={() => handleApply(job, application.message)}
-                  >
-                    Pendiente
-                  </button>
                 ) : (
+                  // Mostrar el botón según el estado de la postulación
+                  application?.status === 'pending' ? (
+                    <button
+                      style={{ ...HomeStyles.applyButton, backgroundColor: '#695d0d', borderColor: '#695d0d', color: '#ffffff' }}
+                      onClick={() => handleApply(job, application.message)}
+                    >
+                      Pendiente
+                    </button>
+                  ) : application?.status === 'accepted' ? (
+                    <button
+                      style={{ ...HomeStyles.applyButton, backgroundColor: '#1e4d04', color: '#ffffff', cursor: 'default' }}
+                      disabled
+                    >
+                      ✓ Aceptado
+                    </button>
+                  ) : application?.status === 'rejected' ? (
+                    <button
+                      style={{ ...HomeStyles.applyButton, backgroundColor: '#7f1313', borderColor: '#7f1313', color: '#ffffff', cursor: 'default' }}
+                      disabled
+                    >
+                      X Rechazado
+                    </button>
+                  ) : (
                   <button
                     style={HomeStyles.applyButton}
                     onClick={() => handleApply(job)}
                   >
                     ☆ Postular
                   </button>
+                )
                 )}
               </div>
             );
