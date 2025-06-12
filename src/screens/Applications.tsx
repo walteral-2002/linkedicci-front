@@ -172,7 +172,7 @@ const Applications = () => {
             </div>
           </div>
         )}
-        <h1 style={ApplicationStyles.sectionTitle}>Mis postulaciones</h1>
+        <h1 style={ApplicationStyles.sectionTitle}>Mis Postulaciones</h1>
         <h1 style={ApplicationStyles.sectionSubtitle}> Para ver más detalles, haga click en el título de la oferta</h1>
         {/* Job Listings */}
         {appliedJobs.length === 0 ? (

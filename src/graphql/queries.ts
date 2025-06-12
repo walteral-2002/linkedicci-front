@@ -105,3 +105,27 @@ export const GET_USER_BY_ID = gql`
     }
   }
 `;
+
+export const GET_CV_BY_USER_ID = gql`
+  query GetCv($userId: String!) { 
+    getCv(userId: $userId) { 
+      userId 
+      name 
+      description 
+      career 
+      email 
+      phone 
+      projects { 
+        id 
+        name 
+        url 
+        description 
+      } 
+      skills { 
+        id 
+        name 
+        rate 
+      } 
+    } 
+  }
+`;

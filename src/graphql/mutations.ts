@@ -74,3 +74,51 @@ export const DECIDE_APPLICATION = gql`
     } 
   }
 `;
+
+export const CREATE_CV = gql`
+  mutation CreateCv($input: CreateCvInput!){
+    createCv(input: $input){
+      userId
+      name
+      description
+      career
+      email
+      phone
+      projects{
+        id
+        name
+        url
+        description
+      }
+      skills{
+        id
+        name
+        rate
+      }
+    }
+  }
+`;
+
+export const UPDATE_CV = gql`
+  mutation UpdateCv($input: CreateCvInput!){
+    updateCv(input: $input){
+      userId
+      name
+      description
+      career
+      email
+      phone
+      projects{
+        id
+        name
+        url
+        description
+      }
+      skills{
+        id
+        name
+        rate
+      }
+    }
+  }
+`;

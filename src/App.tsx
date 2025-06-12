@@ -5,6 +5,7 @@ import Register from './screens/Register';
 import OfferInfo from './screens/OfferInfo';
 import OfferApplicants from './screens/OfferApplicants';
 import Applications from './screens/Applications';
+import CV from './screens/CV';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/offer/:id" element={<OfferInfo />} />
         <Route path="/offer/applicants/:offerId" element={<OfferApplicants />} />
         <Route path="/applications" element={<Applications />} />
+        <Route path="/cv" element={<CV />} />
       </Routes>
     </Router>
   );
